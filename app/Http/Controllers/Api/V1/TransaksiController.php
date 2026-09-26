@@ -79,4 +79,29 @@ final class TransaksiController extends Controller
             ),
         ]);
     }
+
+    public function pratinjau(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'item' => ['required', 'array', 'min:1'],
+            'item.*.sku' => ['required', 'string'],
+            'item.*.kuantitas' => ['required', 'integer', 'min:1'],
+            'member' => ['sometimes', 'boolean'],
+        ]);
+
+        // Method hitung() berada di service sehingga dapat digunakan ulang
+        // oleh endpoint pratinjau tanpa menyalin logika perhitungan ke controller.
+        // Jika logika hitung ditulis langsung di controller, logika tersebut
+        // perlu dipindahkan ke service agar dapat digunakan kembali oleh
+        // endpoint lain.
+        $hasil = $this->kasir->hitung(
+            item: $data['item'],
+            member: (bool) ($data['member'] ?? false),
+        );
+
+        return response()->json([
+            'message' => 'Pratinjau berhasil',
+            'data' => $hasil,
+        ]);
+    }
 }

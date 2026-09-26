@@ -88,9 +88,19 @@ final class LayananKasir
             )
             : Uang::nol();
 
-        $totalDiskon = $diskonItem->tambah($diskonMember);
+        $diskonHappyHour = Uang::nol();
 
-        $dpp = $subtotal->kurang($totalDiskon); // AB-4
+        $jamSekarang = now()->format('H:i');
+
+        if ($jamSekarang >= '16:00' && $jamSekarang < '18:00') {
+            $diskonHappyHour = $subtotal->persen(10);
+        }
+
+        $totalDiskon = $diskonItem
+            ->tambah($diskonMember)
+            ->tambah($diskonHappyHour);
+
+        $dpp = $subtotal->kurang($totalDiskon);
 
         $ppn = $dpp->persen(
             (float) config('pos.ppn_persen')
@@ -107,6 +117,7 @@ final class LayananKasir
             'subtotal' => $subtotal->rupiah,
             'diskon_grosir' => $diskonItem->rupiah,
             'diskon_member' => $diskonMember->rupiah,
+            'diskon_happy_hour' => $diskonHappyHour->rupiah,
             'total_diskon' => $totalDiskon->rupiah,
             'dpp' => $dpp->rupiah,
             'ppn' => $ppn->rupiah,

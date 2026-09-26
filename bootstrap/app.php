@@ -5,6 +5,7 @@ use App\Http\Middleware\CatatRequest;
 use App\Http\Middleware\JamOperasional;
 use App\Http\Middleware\KunciApiKasir;
 use App\Http\Middleware\PeranKasir;
+use App\Http\Middleware\TolakUserAgentKosong;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -28,6 +29,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'kasir' => KunciApiKasir::class,
             'peran' => PeranKasir::class,
             'jam.buka' => JamOperasional::class,
+            'ua.required' => TolakUserAgentKosong::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

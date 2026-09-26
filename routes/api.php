@@ -7,7 +7,7 @@ use App\Http\Controllers\Api\V1\ProdukController;
 use App\Http\Controllers\Api\V1\TransaksiController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/ping', fn () => response()->json([
+Route::get('/ping', fn() => response()->json([
     'status' => 'ok',
     'toko' => config('pos.nama_toko'),
     'waktu' => now()->toIso8601String(),
@@ -21,6 +21,18 @@ Route::prefix('v1/pos')
         Route::get('/produk', [ProdukController::class, 'index'])
             ->name('produk.index');
 
+        Route::get('/pelanggan', function () {
+            return response()->json([
+                'message' => 'Data pelanggan Noven',
+            ]);
+        })->name('pelanggan.index');
+        
+        Route::get('/member', function () {
+            return response()->json([
+                'message' => 'Data member Hanif',
+            ]);
+        })->name('member.index');
+
         Route::get('/produk/{sku}', [ProdukController::class, 'show'])
             ->where('sku', 'SKU-[0-9]{3}')
             ->name('produk.show');
@@ -31,6 +43,10 @@ Route::prefix('v1/pos')
         Route::post('/transaksi', [TransaksiController::class, 'store'])
             ->middleware('jam.buka')
             ->name('transaksi.store');
+
+        Route::post('/pratinjau', [TransaksiController::class, 'pratinjau'])
+            ->middleware('ua.required')
+            ->name('transaksi.pratinjau');
 
         Route::get('/transaksi/{nomor}', [TransaksiController::class, 'show'])
             ->where('nomor', 'POS-[0-9]{8}-[0-9]{4}')
