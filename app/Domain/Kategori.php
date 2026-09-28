@@ -2,35 +2,32 @@
 
 declare(strict_types=1);
 
-namespace App\Models;
+namespace App\Domain;
 
-use App\Domain\Kategori as EnumKategori;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-
-final class Kategori extends Model
+/**
+ * Enum backed string. Dipakai agar nilai kategori tidak lagi
+ * berupa teks bebas yang rawan salah ketik.
+ */
+enum Kategori: string
 {
-    use HasFactory;
+    case Makanan = 'makanan';
+    case Minuman = 'minuman';
+    case KebutuhanRumah = 'kebutuhan_rumah';
+    case AlatTulis = 'alat_tulis';
 
-    protected $table = 'kategori';
-
-    protected $fillable = ['kode', 'nama', 'aktif'];
-
-    protected function casts(): array
+    public function label(): string
     {
-        return [
-            'aktif' => 'boolean',
-        ];
+        return match ($this) {
+            self::Makanan => 'Makanan',
+            self::Minuman => 'Minuman',
+            self::KebutuhanRumah => 'Kebutuhan Rumah Tangga',
+            self::AlatTulis => 'Alat Tulis',
+        };
     }
 
-    /** Menjembatani baris tabel dengan enum domain dari Modul 3. */
-    public function enum(): EnumKategori
+    /** @return array<int, string> daftar nilai untuk keperluan validasi */
+    public static function nilai(): array
     {
-        return EnumKategori::from($this->kode);
-    }
-
-    public function scopeAktif($query)
-    {
-        return $query->where('kategori.aktif', true);
+        return array_column(self::cases(), 'value');
     }
 }

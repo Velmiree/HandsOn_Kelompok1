@@ -7,7 +7,7 @@ use App\Http\Controllers\Api\V1\ProdukController;
 use App\Http\Controllers\Api\V1\TransaksiController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/ping', fn() => response()->json([
+Route::get('/ping', fn () => response()->json([
     'status' => 'ok',
     'toko' => config('pos.nama_toko'),
     'waktu' => now()->toIso8601String(),
@@ -26,7 +26,7 @@ Route::prefix('v1/pos')
                 'message' => 'Data pelanggan Noven',
             ]);
         })->name('pelanggan.index');
-        
+
         Route::get('/member', function () {
             return response()->json([
                 'message' => 'Data member Hanif',
