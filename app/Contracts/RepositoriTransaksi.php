@@ -20,7 +20,10 @@ interface RepositoriTransaksi
     public function simpan(array $transaksi): void;
 
     /** @param array<string, mixed> $perubahan */
-    public function perbarui(string $nomor, array $perubahan): void;
+    public function perbarui(
+        string $nomor,
+        array $perubahan
+    ): void;
 
     /** Nomor urut berikutnya untuk tanggal tertentu. */
     public function urutanBerikutnya(string $tanggal): int;
