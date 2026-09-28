@@ -13,7 +13,7 @@ final class ProdukFactory extends Factory
     {
         return [
             'kategori_id' => Kategori::factory(),
-            'sku' => 'SKU-' . $this->faker->unique()->numberBetween(100, 999),
+            'sku' => 'SKU-'.$this->faker->unique()->numberBetween(100, 999),
             'nama' => ucwords($this->faker->words(3, true)),
             'harga' => $this->faker->numberBetween(20, 5_000) * 100,
             'stok' => $this->faker->numberBetween(5, 300),

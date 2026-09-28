@@ -6,8 +6,8 @@ namespace App\Providers;
 
 use App\Contracts\RepositoriProduk;
 use App\Contracts\RepositoriTransaksi;
-use App\Repositories\RepositoriProdukArray;
-use App\Repositories\RepositoriTransaksiBerkas;
+use App\Repositories\RepositoriProdukEloquent;
+use App\Repositories\RepositoriTransaksiEloquent;
 use Illuminate\Support\ServiceProvider;
 
 final class AppServiceProvider extends ServiceProvider
@@ -16,12 +16,12 @@ final class AppServiceProvider extends ServiceProvider
     {
         $this->app->bind(
             RepositoriProduk::class,
-            RepositoriProdukArray::class
+            RepositoriProdukEloquent::class
         );
 
-        $this->app->singleton(
+        $this->app->bind(
             RepositoriTransaksi::class,
-            RepositoriTransaksiBerkas::class
+            RepositoriTransaksiEloquent::class
         );
     }
 
