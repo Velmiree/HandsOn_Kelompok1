@@ -43,12 +43,12 @@ final class LayananLaporan
         $omzet = (int) $ringkas->omzet;
 
         return [
-            'tanggal'          => $tanggal,
+            'tanggal' => $tanggal,
             'jumlah_transaksi' => $jumlah,
-            'omzet'            => $omzet,
-            'omzet_format'     => (new Uang($omzet))->format(),
-            'total_diskon'     => (int) $ringkas->diskon,
-            'total_ppn'        => (int) $ringkas->ppn,
+            'omzet' => $omzet,
+            'omzet_format' => (new Uang($omzet))->format(),
+            'total_diskon' => (int) $ringkas->diskon,
+            'total_ppn' => (int) $ringkas->ppn,
             'rata_rata_struk' => $jumlah > 0
                 ? intdiv($omzet, $jumlah)
                 : 0,
@@ -93,9 +93,9 @@ final class LayananLaporan
                 ),
             ])
             ->map(static fn ($baris): array => [
-                'sku'        => $baris->sku,
-                'nama'       => $baris->nama,
-                'kuantitas'  => (int) $baris->kuantitas,
+                'sku' => $baris->sku,
+                'nama' => $baris->nama,
+                'kuantitas' => (int) $baris->kuantitas,
                 'pendapatan' => (int) $baris->pendapatan,
             ])
             ->all();
