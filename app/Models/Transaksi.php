@@ -54,6 +54,16 @@ final class Transaksi extends Model
 
     public function scopeTanggal($query, string $tanggal)
     {
-        return $query->whereDate('created_at', $tanggal);
+        $awal = \Illuminate\Support\Carbon::parse($tanggal)->startOfDay();
+        $akhir = $awal->copy()->addDay();
+
+        return $query
+            ->where('created_at', '>=', $awal)
+            ->where('created_at', '<', $akhir);
+    }
+
+    public function itemTransaksi()
+    {
+        return $this->hasMany(ItemTransaksi::class, 'transaksi_id');
     }
 }

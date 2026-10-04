@@ -35,6 +35,35 @@ final class RepositoriProdukEloquent implements RepositoriProduk
         return $produk === null ? null : $this->keArray($produk);
     }
 
+    public function cariPemasok(string $sku): ?array
+    {
+        $produk = Produk::query()
+            ->with([
+                'kategori',
+                'pemasok' => fn ($query) => $query
+                    ->orderByPivot('utama', 'desc')
+                    ->orderBy('pemasok.nama'),
+            ])
+            ->where('sku', strtoupper(trim($sku)))
+            ->first();
+
+        if ($produk === null) {
+            return null;
+        }
+
+        return [
+            ...$this->keArray($produk),
+            'pemasok' => $produk->pemasok
+                ->map(fn ($pemasok): array => [
+                    'nama' => $pemasok->nama,
+                    'kota' => $pemasok->kota,
+                    'harga_beli' => $pemasok->pasokan->harga_beli,
+                    'utama' => $pemasok->pasokan->utama,
+                ])
+                ->all(),
+        ];
+    }
+
     public function kurangiStok(string $sku, int $kuantitas): void
     {
         Produk::query()
@@ -65,17 +94,17 @@ final class RepositoriProdukEloquent implements RepositoriProduk
     {
         return Produk::query()
             ->when($aktifSaja, fn (Builder $q) => $q->aktif())
-            ->join('kategori', 'kategori.id', '=', 'produk.kategori_id')
-            ->select(['produk.*', 'kategori.kode as kategori_kode']);
+            ->with('kategori');
     }
 
+    /** @return array<string, mixed> */
     /** @return array<string, mixed> */
     private function keArray(Produk $produk): array
     {
         return [
             'sku' => $produk->sku,
             'nama' => $produk->nama,
-            'kategori' => $produk->kategori_kode,
+            'kategori' => $produk->kategori?->kode,
             'harga' => $produk->harga,
             'stok' => $produk->stok,
         ];
