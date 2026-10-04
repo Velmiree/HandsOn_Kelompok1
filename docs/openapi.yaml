@@ -1,0 +1,690 @@
+
+openapi: 3.0.3
+
+info:
+  title: API Sistem POS
+  description: Dokumentasi API untuk Sistem Point of Sale.
+  version: 1.0.0
+  license:
+    name: Not specified
+
+servers:
+  - url: http://127.0.0.1:8000
+    description: Server lokal
+
+tags:
+  - name: Produk
+    description: Pengelolaan data produk dan pemasok
+  - name: Transaksi
+    description: Pengelolaan transaksi penjualan
+  - name: Laporan
+    description: Laporan penjualan
+  - name: Data
+    description: Informasi pelanggan dan member
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+
+  schemas:
+    Error:
+      type: object
+      properties:
+        kesalahan:
+          type: string
+          example: kunci_api_tidak_dikenal
+        pesan:
+          type: string
+          example: Kunci API tidak dikenal.
+
+security:
+  - ApiKeyAuth: []
+
+paths:
+  /api/ping:
+    get:
+      operationId: pingApi
+      summary: Memeriksa status API
+      description: Memeriksa status API tanpa memerlukan kunci API.
+      security: []
+      responses:
+        '200':
+          description: API aktif
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  toko:
+                    type: string
+                    example: Toko POS
+                  waktu:
+                    type: string
+                    format: date-time
+                    example: '2026-10-04T10:00:00+07:00'
+        '400':
+          description: Permintaan tidak valid
+
+  /api/v1/pos/produk:
+    get:
+      tags:
+        - Produk
+      operationId: getProduk
+      summary: Mengambil daftar produk
+      parameters:
+        - name: kategori
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter berdasarkan kode kategori.
+        - name: cari
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Pencarian berdasarkan nama produk.
+      responses:
+        '200':
+          description: Daftar produk berhasil diambil
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        sku:
+                          type: string
+                          example: SKU-001
+                        nama:
+                          type: string
+                          example: Beras Premium
+                        kategori:
+                          type: string
+                          example: kebutuhan_rumah
+                        kategori_label:
+                          type: string
+                          example: Kebutuhan Rumah Tangga
+                        harga:
+                          type: integer
+                          example: 72000
+                        harga_format:
+                          type: string
+                          example: Rp72.000
+                        stok:
+                          type: integer
+                          example: 20
+                        tersedia:
+                          type: boolean
+                          example: true
+                  meta:
+                    type: object
+                    properties:
+                      jumlah:
+                        type: integer
+                        example: 1
+                      kategori:
+                        type: string
+                        example: semua
+        '401':
+          description: Kunci API hilang atau tidak dikenal
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/v1/pos/produk/{sku}:
+    get:
+      tags:
+        - Produk
+      operationId: getProdukBySku
+      summary: Mengambil detail produk
+      parameters:
+        - name: sku
+          in: path
+          required: true
+          description: SKU produk dengan format SKU- diikuti tiga angka.
+          schema:
+            type: string
+            pattern: '^SKU-[0-9]{3}$'
+            example: SKU-001
+      responses:
+        '200':
+          description: Detail produk berhasil diambil
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    description: Detail produk.
+        '401':
+          description: Kunci API hilang atau tidak dikenal
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Produk tidak ditemukan
+
+  /api/v1/pos/produk/{sku}/pemasok:
+    get:
+      tags:
+        - Produk
+      operationId: getPemasokProduk
+      summary: Mengambil daftar pemasok produk
+      description: Endpoint ini hanya dapat diakses oleh peran supervisor.
+      parameters:
+        - name: sku
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: '^SKU-[0-9]{3}$'
+            example: SKU-001
+      responses:
+        '200':
+          description: Data produk dan pemasok berhasil diambil
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      sku:
+                        type: string
+                        example: SKU-001
+                      nama:
+                        type: string
+                        example: Beras Premium
+                      kategori:
+                        type: string
+                        example: kebutuhan_rumah
+                      harga:
+                        type: integer
+                        example: 72000
+                      stok:
+                        type: integer
+                        example: 20
+                      pemasok:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            nama:
+                              type: string
+                              example: PT Sumber Pangan
+                            kota:
+                              type: string
+                              example: Surakarta
+                            harga_beli:
+                              type: integer
+                              example: 57600
+                            utama:
+                              type: boolean
+                              example: true
+                            margin:
+                              type: integer
+                              example: 14400
+                            margin_persen:
+                              type: number
+                              format: float
+                              example: 20.0
+        '401':
+          description: Kunci API hilang atau tidak dikenal
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Peran tidak memiliki izin
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Produk tidak ditemukan
+
+  /api/v1/pos/pelanggan:
+    get:
+      tags:
+        - Data
+      operationId: getPelanggan
+      summary: Mengambil informasi pelanggan
+      responses:
+        '200':
+          description: Informasi pelanggan berhasil diambil
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Data pelanggan Noven
+        '401':
+          description: Kunci API hilang atau tidak dikenal
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/v1/pos/member:
+    get:
+      tags:
+        - Data
+      operationId: getMember
+      summary: Mengambil informasi member
+      responses:
+        '200':
+          description: Informasi member berhasil diambil
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Data member Hanif
+        '401':
+          description: Kunci API hilang atau tidak dikenal
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/v1/pos/transaksi:
+    get:
+      tags:
+        - Transaksi
+      operationId: getTransaksi
+      summary: Mengambil daftar transaksi
+      parameters:
+        - name: tanggal
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+          description: Tanggal transaksi. Jika kosong, menggunakan tanggal hari ini.
+      responses:
+        '200':
+          description: Daftar transaksi berhasil diambil
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      description: Data transaksi.
+                  meta:
+                    type: object
+                    properties:
+                      tanggal:
+                        type: string
+                        format: date
+        '401':
+          description: Kunci API hilang atau tidak dikenal
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    post:
+      tags:
+        - Transaksi
+      operationId: createTransaksi
+      summary: Membuat transaksi
+      description: Membuat transaksi penjualan baru.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - item
+                - metode_bayar
+              properties:
+                item:
+                  type: array
+                  minItems: 1
+                  items:
+                    type: object
+                    required:
+                      - sku
+                      - kuantitas
+                    properties:
+                      sku:
+                        type: string
+                        example: SKU-001
+                      kuantitas:
+                        type: integer
+                        minimum: 1
+                        example: 1
+                metode_bayar:
+                  type: string
+                  example: tunai
+                member:
+                  type: boolean
+                  example: false
+                dibayar:
+                  type: integer
+                  minimum: 0
+                  example: 100000
+      responses:
+        '201':
+          description: Transaksi berhasil dibuat
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    description: Data transaksi yang dibuat.
+        '401':
+          description: Kunci API hilang atau tidak dikenal
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validasi gagal
+
+  /api/v1/pos/transaksi/{nomor}:
+    get:
+      tags:
+        - Transaksi
+      operationId: getTransaksiByNomor
+      summary: Mengambil detail transaksi
+      parameters:
+        - name: nomor
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: '^POS-[0-9]{8}-[0-9]{4}$'
+            example: POS-20261004-0001
+      responses:
+        '200':
+          description: Detail transaksi berhasil diambil
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    description: Detail transaksi.
+        '401':
+          description: Kunci API hilang atau tidak dikenal
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Transaksi tidak ditemukan
+
+  /api/v1/pos/transaksi/{nomor}/batal:
+    post:
+      tags:
+        - Transaksi
+      operationId: batalTransaksi
+      summary: Membatalkan transaksi
+      description: Hanya dapat dilakukan oleh supervisor.
+      parameters:
+        - name: nomor
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: '^POS-[0-9]{8}-[0-9]{4}$'
+            example: POS-20261004-0001
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - alasan
+              properties:
+                alasan:
+                  type: string
+                  minLength: 3
+                  example: Transaksi salah
+      responses:
+        '200':
+          description: Transaksi berhasil dibatalkan
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    description: Hasil pembatalan transaksi.
+        '401':
+          description: Kunci API hilang atau tidak dikenal
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Peran tidak memiliki izin
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Transaksi tidak ditemukan
+        '422':
+          description: Validasi gagal
+
+  /api/v1/pos/pratinjau:
+    post:
+      tags:
+        - Transaksi
+      operationId: previewTransaksi
+      summary: Melihat pratinjau transaksi
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - item
+              properties:
+                item:
+                  type: array
+                  minItems: 1
+                  items:
+                    type: object
+                    required:
+                      - sku
+                      - kuantitas
+                    properties:
+                      sku:
+                        type: string
+                        example: SKU-001
+                      kuantitas:
+                        type: integer
+                        minimum: 1
+                        example: 1
+                member:
+                  type: boolean
+                  example: false
+      responses:
+        '200':
+          description: Pratinjau transaksi berhasil dibuat
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Pratinjau berhasil
+                  data:
+                    type: object
+                    description: Rincian pratinjau transaksi.
+        '401':
+          description: Kunci API hilang atau tidak dikenal
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validasi gagal
+
+  /api/v1/pos/laporan/harian:
+    get:
+      tags:
+        - Laporan
+      operationId: getLaporanHarian
+      summary: Mengambil laporan penjualan harian
+      parameters:
+        - name: tanggal
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+          description: Tanggal laporan. Jika kosong, menggunakan tanggal hari ini.
+      responses:
+        '200':
+          description: Laporan harian berhasil diambil
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    description: Ringkasan penjualan harian.
+        '401':
+          description: Kunci API hilang atau tidak dikenal
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/v1/pos/laporan/terlaris:
+    get:
+      tags:
+        - Laporan
+      operationId: getLaporanTerlaris
+      summary: Mengambil laporan produk terlaris
+      parameters:
+        - name: tanggal
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: batas
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 20
+            default: 5
+          description: Jumlah produk yang ditampilkan, dibatasi antara 1 dan 20.
+      responses:
+        '200':
+          description: Laporan produk terlaris berhasil diambil
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      description: Data produk terlaris.
+                  meta:
+                    type: object
+                    properties:
+                      tanggal:
+                        type: string
+                        format: date
+                      batas:
+                        type: integer
+        '401':
+          description: Kunci API hilang atau tidak dikenal
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/v1/pos/laporan/kategori:
+    get:
+      tags:
+        - Laporan
+      operationId: getLaporanKategori
+      summary: Mengambil laporan penjualan per kategori
+      parameters:
+        - name: tanggal
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+          description: Tanggal laporan. Jika kosong, menggunakan tanggal hari ini.
+      responses:
+        '200':
+          description: Laporan per kategori berhasil diambil
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        kategori:
+                          type: string
+                          example: minuman
+                        nama:
+                          type: string
+                          example: Minuman
+                        jumlah:
+                          type: integer
+                          example: 4
+                        pendapatan:
+                          type: integer
+                          example: 81000
+                  meta:
+                    type: object
+                    properties:
+                      tanggal:
+                        type: string
+                        format: date
+        '401':
+          description: Kunci API hilang atau tidak dikenal
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'

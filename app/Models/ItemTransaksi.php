@@ -33,4 +33,14 @@ final class ItemTransaksi extends Model
             'total' => 'integer',
         ];
     }
+
+    public function transaksi()
+    {
+        return $this->belongsTo(Transaksi::class, 'transaksi_id');
+    }
+
+    public function produk()
+    {
+        return $this->belongsTo(Produk::class, 'produk_id');
+    }
 }

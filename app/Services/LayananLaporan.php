@@ -9,6 +9,8 @@ use App\Domain\Uang;
 use App\Models\ItemTransaksi;
 use App\Models\Transaksi;
 use Illuminate\Support\Facades\DB;
+use App\Models\Kategori;
+use Illuminate\Database\Eloquent\Builder;
 
 final class LayananLaporan
 {
@@ -36,7 +38,7 @@ final class LayananLaporan
                 DB::raw('SUM(total_bayar)'),
                 'metode_bayar'
             )
-            ->map(static fn ($nilai): int => (int) $nilai)
+            ->map(static fn($nilai): int => (int) $nilai)
             ->all();
 
         $jumlah = (int) $ringkas->jumlah;
@@ -92,12 +94,52 @@ final class LayananLaporan
                     'SUM(item_transaksi.total) AS pendapatan'
                 ),
             ])
-            ->map(static fn ($baris): array => [
+            ->map(static fn($baris): array => [
                 'sku' => $baris->sku,
                 'nama' => $baris->nama,
                 'kuantitas' => (int) $baris->kuantitas,
                 'pendapatan' => (int) $baris->pendapatan,
             ])
             ->all();
+    }
+
+    /**
+     * Penjualan per kategori: SATU kueri berapa pun jumlah kategorinya.
+     *
+     * withSum() menambahkan subquery SUM(...) pada relasi itemTerjual
+     * tanpa memuat satu baris struk pun ke memori PHP.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function perKategori(string $tanggal): array
+    {
+        $struk = $this->idStrukSelesai($tanggal);
+        $saring = fn(Builder $q) => $q->whereIn(
+            'item_transaksi.transaksi_id',
+            $struk
+        );
+
+        return Kategori::query()
+            ->withSum(['itemTerjual as kuantitas' => $saring], 'item_transaksi.kuantitas')
+            ->withSum(['itemTerjual as pendapatan' => $saring], 'item_transaksi.total')
+            ->orderByDesc('pendapatan')
+            ->orderBy('kode')
+            ->get()
+            ->map(static fn(Kategori $k): array => [
+                'kode' => $k->kode,
+                'nama' => $k->nama,
+                'kuantitas' => (int) $k->kuantitas,
+                'pendapatan' => (int) $k->pendapatan,
+            ])
+            ->all();
+    }
+
+    /** Subquery ID struk selesai pada tanggal ini. */
+    private function idStrukSelesai(string $tanggal): Builder
+    {
+        return Transaksi::query()
+            ->selesai()
+            ->tanggal($tanggal)
+            ->select('transaksi.id');
     }
 }

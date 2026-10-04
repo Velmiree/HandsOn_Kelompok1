@@ -7,6 +7,8 @@ namespace App\Models;
 use App\Domain\Kategori as EnumKategori;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\ItemTransaksi;
+use App\Models\Produk;
 
 final class Kategori extends Model
 {
@@ -27,6 +29,23 @@ final class Kategori extends Model
     public function enum(): EnumKategori
     {
         return EnumKategori::from($this->kode);
+    }
+
+    public function produk()
+    {
+        return $this->hasMany(Produk::class, 'kategori_id');
+    }
+
+    public function itemTerjual()
+    {
+        return $this->hasManyThrough(
+            ItemTransaksi::class,
+            Produk::class,
+            'kategori_id',
+            'produk_id',
+            'id',
+            'id'
+        );
     }
 
     public function scopeAktif($query)

@@ -63,6 +63,37 @@ final class LayananKatalog
     }
 
     /**
+     * Pemasok sebuah produk beserta marginnya (AB-13).
+     *
+     * @return array<string, mixed>
+     */
+    public function pemasok(string $sku): array
+    {
+        $produk = $this->repositori->cariPemasok($sku);
+
+        if ($produk === null) {
+            throw new ProdukTidakDitemukan($sku);
+        }
+
+        $produk['pemasok'] = array_map(
+            static function (array $p) use ($produk): array {
+                $margin = $produk['harga'] - $p['harga_beli'];
+
+                return $p + [
+                    'margin' => $margin,
+                    'margin_persen' => round(
+                        $margin * 100 / $produk['harga'],
+                        1
+                    ),
+                ];
+            },
+            $produk['pemasok'],
+        );
+
+        return $produk;
+    }
+
+    /**
      * @param  array<string, mixed>  $produk
      * @return array<string, mixed>
      */

@@ -8,6 +8,7 @@ use App\Domain\Uang;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 final class Produk extends Model
 {
@@ -58,5 +59,23 @@ final class Produk extends Model
     public function hargaFormat(): string
     {
         return (new Uang($this->harga))->format();
+    }
+
+    public function kategori()
+    {
+        return $this->belongsTo(Kategori::class, 'kategori_id');
+    }
+
+    public function pemasok(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            Pemasok::class,
+            'pemasok_produk',
+            'produk_id',
+            'pemasok_id'
+        )
+            ->as('pasokan')
+            ->withPivot('harga_beli', 'utama')
+            ->withTimestamps();
     }
 }

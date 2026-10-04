@@ -20,6 +20,9 @@ interface RepositoriProduk
     /** @return array<string, mixed>|null */
     public function cariSku(string $sku): ?array;
 
+    /** @return array<string, mixed>|null */
+    public function cariPemasok(string $sku): ?array;
+
     public function kurangiStok(string $sku, int $kuantitas): void;
 
     public function kunciStok(string $sku): int;

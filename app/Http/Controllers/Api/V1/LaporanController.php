@@ -41,6 +41,18 @@ final class LaporanController extends Controller
         ]);
     }
 
+    public function kategori(Request $request): JsonResponse
+    {
+        $tanggal = $this->tanggal($request);
+
+        return response()->json([
+            'data' => $this->laporan->perKategori($tanggal),
+            'meta' => [
+                'tanggal' => $tanggal,
+            ],
+        ]);
+    }
+
     private function tanggal(Request $request): string
     {
         $tanggal = $request->string('tanggal')->trim()->toString();
