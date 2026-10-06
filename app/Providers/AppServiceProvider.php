@@ -8,6 +8,7 @@ use App\Contracts\RepositoriProduk;
 use App\Contracts\RepositoriTransaksi;
 use App\Repositories\RepositoriProdukEloquent;
 use App\Repositories\RepositoriTransaksiEloquent;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\ServiceProvider;
 
 final class AppServiceProvider extends ServiceProvider
@@ -26,7 +27,7 @@ final class AppServiceProvider extends ServiceProvider
     }
 
     public function boot(): void
-    {
-        //
-    }
+{
+    Model::shouldBeStrict(! $this->app->isProduction());
+}
 }

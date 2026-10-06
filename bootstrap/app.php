@@ -2,6 +2,7 @@
 
 use App\Exceptions\KesalahanPos;
 use App\Http\Middleware\CatatRequest;
+use App\Http\Middleware\HitungKueri;
 use App\Http\Middleware\JamOperasional;
 use App\Http\Middleware\KunciApiKasir;
 use App\Http\Middleware\PeranKasir;
@@ -22,6 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Middleware global: berjalan pada SEMUA rute berkas api.php
         $middleware->api(append: [
             CatatRequest::class,
+            HitungKueri::class,
         ]);
 
         // Middleware beralias: dipasang per rute atau per grup rute
