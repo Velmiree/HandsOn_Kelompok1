@@ -1,0 +1,1031 @@
+{
+  "info": {
+    "_postman_id": "4ad63cd3-3ac8-4bce-82c3-29d9ab5d0620",
+    "name": "Barokah Mart POS — Modul 3",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "58620291",
+    "_collection_link": "https://go.postman.co/collection/58620291-4ad63cd3-3ac8-4bce-82c3-29d9ab5d0620?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "00 Kesehatan Layanan",
+      "item": [
+        {
+          "name": "GET Ping",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// After response\r\npm.test('Response berformat JSON', function () {\r\n    pm.response.to.be.json;\r\n});\r\n\r\npm.test('Response di bawah 500 ms', function () {\r\n    pm.expect(pm.response.responseTime).to.be.below(500);\r\n});\r\n\r\npm.test('Header pelacakan dari middleware CatatRequest ada', function () {\r\n    pm.response.to.have.header('X-Request-Id');\r\n    pm.response.to.have.header('X-Response-Time');\r\n});"
+                ]
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Before request\r\nconst hariIni = new Date().toLocaleDateString('sv-SE', {\r\n    timeZone: 'Asia/Jakarta',\r\n});\r\n\r\npm.collectionVariables.set('tanggal', hariIni);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/ping",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ping"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "01 Katalog Produk",
+      "item": [
+        {
+          "name": "GET Daftar produk",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Before request\r\nconst hariIni = new Date().toLocaleDateString('sv-SE', {\r\n    timeZone: 'Asia/Jakarta',\r\n});\r\n\r\npm.collectionVariables.set('tanggal', hariIni);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// After response\r\npm.test('Response berformat JSON', function () {\r\n    pm.response.to.be.json;\r\n});\r\n\r\npm.test('Response di bawah 500 ms', function () {\r\n    pm.expect(pm.response.responseTime).to.be.below(500);\r\n});\r\n\r\npm.test('Header pelacakan dari middleware CatatRequest ada', function () {\r\n    pm.response.to.have.header('X-Request-Id');\r\n    pm.response.to.have.header('X-Response-Time');\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/pos/produk",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "pos",
+                "produk"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET Daftar produk (kategori=minuman)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Before request\r\nconst hariIni = new Date().toLocaleDateString('sv-SE', {\r\n    timeZone: 'Asia/Jakarta',\r\n});\r\n\r\npm.collectionVariables.set('tanggal', hariIni);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// After response\r\npm.test('Response berformat JSON', function () {\r\n    pm.response.to.be.json;\r\n});\r\n\r\npm.test('Response di bawah 500 ms', function () {\r\n    pm.expect(pm.response.responseTime).to.be.below(500);\r\n});\r\n\r\npm.test('Header pelacakan dari middleware CatatRequest ada', function () {\r\n    pm.response.to.have.header('X-Request-Id');\r\n    pm.response.to.have.header('X-Response-Time');\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/pos/produk?kategori=minuman",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "pos",
+                "produk"
+              ],
+              "query": [
+                {
+                  "key": "kategori",
+                  "value": "minuman"
+                },
+                {
+                  "key": "",
+                  "value": "",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET Detail produk SKU-004",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Before request\r\nconst hariIni = new Date().toLocaleDateString('sv-SE', {\r\n    timeZone: 'Asia/Jakarta',\r\n});\r\n\r\npm.collectionVariables.set('tanggal', hariIni);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// After response\r\npm.test('Response berformat JSON', function () {\r\n    pm.response.to.be.json;\r\n});\r\n\r\npm.test('Response di bawah 500 ms', function () {\r\n    pm.expect(pm.response.responseTime).to.be.below(500);\r\n});\r\n\r\npm.test('Header pelacakan dari middleware CatatRequest ada', function () {\r\n    pm.response.to.have.header('X-Request-Id');\r\n    pm.response.to.have.header('X-Response-Time');\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/pos/produk/SKU-004",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "pos",
+                "produk",
+                "SKU-004"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET Produk tidak ada (SKU-999)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Before request\r\nconst hariIni = new Date().toLocaleDateString('sv-SE', {\r\n    timeZone: 'Asia/Jakarta',\r\n});\r\n\r\npm.collectionVariables.set('tanggal', hariIni);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// After response\r\npm.test('Response berformat JSON', function () {\r\n    pm.response.to.be.json;\r\n});\r\n\r\npm.test('Response di bawah 500 ms', function () {\r\n    pm.expect(pm.response.responseTime).to.be.below(500);\r\n});\r\n\r\npm.test('Header pelacakan dari middleware CatatRequest ada', function () {\r\n    pm.response.to.have.header('X-Request-Id');\r\n    pm.response.to.have.header('X-Response-Time');\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/pos/produk/SKU-999",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "pos",
+                "produk",
+                "SKU-999"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "02 Transaksi",
+      "item": [
+        {
+          "name": "POST Transaksi member tunai",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 201 Created', function () {\r\n    pm.response.to.have.status(201);\r\n});\r\n\r\nconst struk = pm.response.json().data;\r\n\r\npm.test('AB-1 subtotal = 101.800', function () {\r\n    pm.expect(struk.subtotal).to.eql(101800);\r\n});\r\n\r\npm.test('AB-2 diskon grosir 5% pada baris kuantitas 12', function () {\r\n    pm.expect(struk.diskon_grosir).to.eql(2040);\r\n});\r\n\r\npm.test('AB-3 diskon member 3% dari subtotal setelah diskon grosir', function () {\r\n    pm.expect(struk.diskon_member).to.eql(2993);\r\n});\r\n\r\npm.test('AB-5 PPN 11% dari DPP, dibulatkan', function () {\r\n    pm.expect(struk.dpp).to.eql(96767);\r\n    pm.expect(struk.ppn).to.eql(10644);\r\n});\r\n\r\npm.test('AB-6 total dibulatkan ke atas kelipatan 100', function () {\r\n    pm.expect(struk.total_bayar % 100).to.eql(0);\r\n    pm.expect(struk.total_bayar).to.eql(107500);\r\n});\r\n\r\npm.test('AB-7 kembalian = dibayar - total bayar', function () {\r\n    pm.expect(struk.kembalian).to.eql(\r\n        struk.dibayar - struk.total_bayar\r\n    );\r\n});\r\n\r\npm.test('Nomor struk berformat POS-YYYYMMDD-NNNN', function () {\r\n    pm.expect(struk.nomor).to.match(/^POS-\\d{8}-\\d{4}$/);\r\n});\r\n\r\npm.collectionVariables.set('nomor_struk', struk.nomor);"
+                ]
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Before request\r\nconst hariIni = new Date().toLocaleDateString('sv-SE', {\r\n    timeZone: 'Asia/Jakarta',\r\n});\r\n\r\npm.collectionVariables.set('tanggal', hariIni);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"item\": [\r\n        {\r\n            \"sku\": \"SKU-006\",\r\n            \"kuantitas\": 12\r\n        },\r\n        {\r\n            \"sku\": \"SKU-002\",\r\n            \"kuantitas\": 2\r\n        },\r\n        {\r\n            \"sku\": \"SKU-004\",\r\n            \"kuantitas\": 1\r\n        }\r\n    ],\r\n    \"member\": true,\r\n    \"metode_bayar\": \"tunai\",\r\n    \"dibayar\": 150000\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/v1/pos/transaksi",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "pos",
+                "transaksi"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET Detail struk",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Before request\r\nconst hariIni = new Date().toLocaleDateString('sv-SE', {\r\n    timeZone: 'Asia/Jakarta',\r\n});\r\n\r\npm.collectionVariables.set('tanggal', hariIni);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// After response\r\npm.test('Response berformat JSON', function () {\r\n    pm.response.to.be.json;\r\n});\r\n\r\npm.test('Response di bawah 500 ms', function () {\r\n    pm.expect(pm.response.responseTime).to.be.below(500);\r\n});\r\n\r\npm.test('Header pelacakan dari middleware CatatRequest ada', function () {\r\n    pm.response.to.have.header('X-Request-Id');\r\n    pm.response.to.have.header('X-Response-Time');\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/pos/transaksi/{{nomor_struk}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "pos",
+                "transaksi",
+                "{{nomor_struk}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST Transaksi stok habis",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// After response\r\npm.test('Response berformat JSON', function () {\r\n    pm.response.to.be.json;\r\n});\r\n\r\npm.test('Response di bawah 500 ms', function () {\r\n    pm.expect(pm.response.responseTime).to.be.below(500);\r\n});\r\n\r\npm.test('Header pelacakan dari middleware CatatRequest ada', function () {\r\n    pm.response.to.have.header('X-Request-Id');\r\n    pm.response.to.have.header('X-Response-Time');\r\n});"
+                ]
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Before request\r\nconst hariIni = new Date().toLocaleDateString('sv-SE', {\r\n    timeZone: 'Asia/Jakarta',\r\n});\r\n\r\npm.collectionVariables.set('tanggal', hariIni);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"item\": [\r\n        {\r\n            \"sku\": \"SKU-005\",\r\n            \"kuantitas\": 2\r\n        }\r\n    ],\r\n    \"metode_bayar\": \"tunai\",\r\n    \"dibayar\": 50000\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/v1/pos/transaksi",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "pos",
+                "transaksi"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST Transaksi pembayaran kurang",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// After response\r\npm.test('Response berformat JSON', function () {\r\n    pm.response.to.be.json;\r\n});\r\n\r\npm.test('Response di bawah 500 ms', function () {\r\n    pm.expect(pm.response.responseTime).to.be.below(500);\r\n});\r\n\r\npm.test('Header pelacakan dari middleware CatatRequest ada', function () {\r\n    pm.response.to.have.header('X-Request-Id');\r\n    pm.response.to.have.header('X-Response-Time');\r\n});"
+                ]
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Before request\r\nconst hariIni = new Date().toLocaleDateString('sv-SE', {\r\n    timeZone: 'Asia/Jakarta',\r\n});\r\n\r\npm.collectionVariables.set('tanggal', hariIni);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"item\": [\r\n        {\r\n            \"sku\": \"SKU-006\",\r\n            \"kuantitas\": 12\r\n        },\r\n        {\r\n            \"sku\": \"SKU-002\",\r\n            \"kuantitas\": 2\r\n        },\r\n        {\r\n            \"sku\": \"SKU-004\",\r\n            \"kuantitas\": 1\r\n        }\r\n    ],\r\n    \"member\": true,\r\n    \"metode_bayar\": \"tunai\",\r\n    \"dibayar\": 100000\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/v1/pos/transaksi",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "pos",
+                "transaksi"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST Batal oleh kasir",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// After response\r\npm.test('Response berformat JSON', function () {\r\n    pm.response.to.be.json;\r\n});\r\n\r\npm.test('Response di bawah 500 ms', function () {\r\n    pm.expect(pm.response.responseTime).to.be.below(500);\r\n});\r\n\r\npm.test('Header pelacakan dari middleware CatatRequest ada', function () {\r\n    pm.response.to.have.header('X-Request-Id');\r\n    pm.response.to.have.header('X-Response-Time');\r\n});"
+                ]
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Before request\r\nconst hariIni = new Date().toLocaleDateString('sv-SE', {\r\n    timeZone: 'Asia/Jakarta',\r\n});\r\n\r\npm.collectionVariables.set('tanggal', hariIni);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"alasan\": \"Pembeli membatalkan pesanan\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/v1/pos/transaksi/{{nomor_struk}}/batal",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "pos",
+                "transaksi",
+                "{{nomor_struk}}",
+                "batal"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "03 Otorisasi dan Pembatalan",
+      "item": [
+        {
+          "name": "POST Batal oleh supervisor",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Before request\r\nconst hariIni = new Date().toLocaleDateString('sv-SE', {\r\n    timeZone: 'Asia/Jakarta',\r\n});\r\n\r\npm.collectionVariables.set('tanggal', hariIni);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// After response\r\npm.test('Response berformat JSON', function () {\r\n    pm.response.to.be.json;\r\n});\r\n\r\npm.test('Response di bawah 500 ms', function () {\r\n    pm.expect(pm.response.responseTime).to.be.below(500);\r\n});\r\n\r\npm.test('Header pelacakan dari middleware CatatRequest ada', function () {\r\n    pm.response.to.have.header('X-Request-Id');\r\n    pm.response.to.have.header('X-Response-Time');\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "apikey",
+              "apikey": [
+                {
+                  "key": "key",
+                  "value": "X-API-Key",
+                  "type": "string"
+                },
+                {
+                  "key": "value",
+                  "value": "{{kunci_supervisor}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"alasan\": \"Pembeli membatalkan pesanan\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/v1/pos/transaksi/{{nomor_struk}}/batal",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "pos",
+                "transaksi",
+                "{{nomor_struk}}",
+                "batal"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST Batal untuk kedua kalinya",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Before request\r\nconst hariIni = new Date().toLocaleDateString('sv-SE', {\r\n    timeZone: 'Asia/Jakarta',\r\n});\r\n\r\npm.collectionVariables.set('tanggal', hariIni);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// After response\r\npm.test('Response berformat JSON', function () {\r\n    pm.response.to.be.json;\r\n});\r\n\r\npm.test('Response di bawah 500 ms', function () {\r\n    pm.expect(pm.response.responseTime).to.be.below(500);\r\n});\r\n\r\npm.test('Header pelacakan dari middleware CatatRequest ada', function () {\r\n    pm.response.to.have.header('X-Request-Id');\r\n    pm.response.to.have.header('X-Response-Time');\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "apikey",
+              "apikey": [
+                {
+                  "key": "key",
+                  "value": "X-API-Key",
+                  "type": "string"
+                },
+                {
+                  "key": "value",
+                  "value": "{{kunci_supervisor}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"alasan\": \"Percobaan kedua\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/v1/pos/transaksi/{{nomor_struk}}/batal",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "pos",
+                "transaksi",
+                "{{nomor_struk}}",
+                "batal"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET Stok SKU-006 setelah pembatalan",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Before request\r\nconst hariIni = new Date().toLocaleDateString('sv-SE', {\r\n    timeZone: 'Asia/Jakarta',\r\n});\r\n\r\npm.collectionVariables.set('tanggal', hariIni);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// After response\r\npm.test('Response berformat JSON', function () {\r\n    pm.response.to.be.json;\r\n});\r\n\r\npm.test('Response di bawah 500 ms', function () {\r\n    pm.expect(pm.response.responseTime).to.be.below(500);\r\n});\r\n\r\npm.test('Header pelacakan dari middleware CatatRequest ada', function () {\r\n    pm.response.to.have.header('X-Request-Id');\r\n    pm.response.to.have.header('X-Response-Time');\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/pos/produk/SKU-006",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "pos",
+                "produk",
+                "SKU-006"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "04 Laporan",
+      "item": [
+        {
+          "name": "GET Laporan harian",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Before request\r\nconst hariIni = new Date().toLocaleDateString('sv-SE', {\r\n    timeZone: 'Asia/Jakarta',\r\n});\r\n\r\npm.collectionVariables.set('tanggal', hariIni);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// After response\r\npm.test('Response berformat JSON', function () {\r\n    pm.response.to.be.json;\r\n});\r\n\r\npm.test('Response di bawah 500 ms', function () {\r\n    pm.expect(pm.response.responseTime).to.be.below(500);\r\n});\r\n\r\npm.test('Header pelacakan dari middleware CatatRequest ada', function () {\r\n    pm.response.to.have.header('X-Request-Id');\r\n    pm.response.to.have.header('X-Response-Time');\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/pos/laporan/harian?tanggal={{tanggal}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "pos",
+                "laporan",
+                "harian"
+              ],
+              "query": [
+                {
+                  "key": "tanggal",
+                  "value": "{{tanggal}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET Produk terlaris",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Before request\r\nconst hariIni = new Date().toLocaleDateString('sv-SE', {\r\n    timeZone: 'Asia/Jakarta',\r\n});\r\n\r\npm.collectionVariables.set('tanggal', hariIni);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// After response\r\npm.test('Response berformat JSON', function () {\r\n    pm.response.to.be.json;\r\n});\r\n\r\npm.test('Response di bawah 500 ms', function () {\r\n    pm.expect(pm.response.responseTime).to.be.below(500);\r\n});\r\n\r\npm.test('Header pelacakan dari middleware CatatRequest ada', function () {\r\n    pm.response.to.have.header('X-Request-Id');\r\n    pm.response.to.have.header('X-Response-Time');\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/pos/laporan/terlaris?batas=3",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "pos",
+                "laporan",
+                "terlaris"
+              ],
+              "query": [
+                {
+                  "key": "batas",
+                  "value": "3"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "GET Pemasok SKU-004 - Supervisor",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 200 OK', function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\nconst data = pm.response.json().data;\r\n\r\npm.test('Pemasok utama berada di urutan pertama', function () {\r\n    pm.expect(data.pemasok[0].utama).to.eql(true);\r\n});\r\n\r\npm.test('AB-13 margin = harga jual - harga beli', function () {\r\n    const p = data.pemasok[0];\r\n\r\n    pm.expect(p.margin).to.eql(data.harga - p.harga_beli);\r\n    pm.expect(p.margin).to.eql(3600);\r\n});\r\n\r\npm.test('Margin berupa bilangan bulat rupiah', function () {\r\n    pm.expect(data.pemasok[0].margin % 1).to.eql(0);\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "apikey",
+          "apikey": [
+            {
+              "key": "value",
+              "value": "{{kunci_supervisor}}",
+              "type": "string"
+            },
+            {
+              "key": "key",
+              "value": "X-API-Key",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/v1/pos/produk/SKU-004/pemasok",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "v1",
+            "pos",
+            "produk",
+            "SKU-004",
+            "pemasok"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "GET Pemasok SKU-004 - Kasir",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('AB-13 kasir ditolak', function () {\r\n    pm.response.to.have.status(403);\r\n\r\n    pm.expect(pm.response.json().kesalahan)\r\n        .to.eql('peran_tidak_berwenang');\r\n});\r\n\r\npm.test('Harga beli tidak ikut terkirim pada response penolakan', function () {\r\n    pm.expect(pm.response.text()).to.not.include('harga_beli');\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "apikey",
+          "apikey": [
+            {
+              "key": "key",
+              "value": "X-API-Key",
+              "type": "string"
+            },
+            {
+              "key": "value",
+              "value": "{{kunci_kasir}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/v1/pos/produk/SKU-004/pemasok",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "v1",
+            "pos",
+            "produk",
+            "SKU-004",
+            "pemasok"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "GET Laporan Kategori - Kasir",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 200 OK', function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\nconst isi = pm.response.json();\r\n\r\npm.test('Seluruh kategori tampil, termasuk yang tanpa penjualan', function () {\r\n    pm.expect(isi.data).to.have.lengthOf(4);\r\n});\r\n\r\npm.test('Kategori tanpa penjualan bernilai nol, bukan null', function () {\r\n    const kosong = isi.data.find(function (d) {\r\n        return d.kode === 'alat_tulis';\r\n    });\r\n\r\n    pm.expect(kosong.kuantitas).to.eql(0);\r\n    pm.expect(kosong.pendapatan).to.eql(0);\r\n});\r\n\r\npm.test('meta.total_pendapatan sama dengan jumlah seluruh baris', function () {\r\n    const jumlah = isi.data.reduce(function (a, d) {\r\n        return a + d.pendapatan;\r\n    }, 0);\r\n\r\n    pm.expect(isi.meta.total_pendapatan).to.eql(jumlah);\r\n    pm.expect(jumlah).to.eql(228760);\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/v1/pos/laporan/kategori",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "v1",
+            "pos",
+            "laporan",
+            "kategori"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "auth": {
+    "type": "apikey",
+    "apikey": [
+      {
+        "key": "value",
+        "value": "{{kunci_kasir}}",
+        "type": "string"
+      },
+      {
+        "key": "key",
+        "value": "X-API-Key",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "exec": [
+          "const hariIni = new Date().toLocaleDateString('sv-SE', {\r",
+          "    timeZone: 'Asia/Jakarta', // format sv-SE menghasilkan YYYY-MM-DD\r",
+          "});\r",
+          "\r",
+          "pm.collectionVariables.set('tanggal', hariIni);"
+        ],
+        "type": "text/javascript"
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "exec": [
+          "pm.test('Jumlah kueri tidak tumbuh mengikuti jumlah data', function () {\r",
+          "    const jumlah = pm.response.headers.get('X-Jumlah-Kueri');\r",
+          "\r",
+          "    if (jumlah === null) {\r",
+          "        pm.expect.fail(\r",
+          "            'Header X-Jumlah-Kueri tidak ada. Middleware HitungKueri terpasang?'\r",
+          "        );\r",
+          "    }\r",
+          "\r",
+          "    pm.expect(Number(jumlah)).to.be.below(10);\r",
+          "});"
+        ],
+        "type": "text/javascript"
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "tanggal",
+      "value": ""
+    },
+    {
+      "key": "nomor_struk",
+      "value": ""
+    }
+  ]
+}
