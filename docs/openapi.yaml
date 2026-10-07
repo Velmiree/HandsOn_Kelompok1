@@ -1,58 +1,66 @@
-
-openapi: 3.0.3
+openapi: 3.1.0
 
 info:
-  title: API Sistem POS
-  description: Dokumentasi API untuk Sistem Point of Sale.
-  version: 1.0.0
+  title: API Kasir Barokah Mart
+  version: 0.5.0
   license:
-    name: Not specified
+    name: Internal API
+    identifier: LicenseRef-Internal
+  summary: REST API Point of Sales untuk aplikasi kasir minimarket Barokah Mart.
+  description: |
+    Kontrak resmi antara tim back end dan tim aplikasi kasir.
+
+    Konvensi umum:
+    - Seluruh nilai uang berupa bilangan bulat rupiah (tanpa desimal).
+    - Setiap permintaan wajib membawa header Accept: application/json.
+    - Kesalahan domain selalu berbentuk { "kesalahan": "...", "pesan": "..." }
+      ditambah konteks sesuai jenis kesalahannya.
+    - Kesalahan validasi bentuk masukan memakai format bawaan Laravel
+      { "message": "...", "errors": { ... } }.
+
+    Aturan bisnis yang disebut pada deskripsi endpoint (AB-1 s.d. AB-14)
+    mengacu pada tabel aturan bisnis di dokumen Hands-On.
+
+    Versi dokumen naik setiap kali kontrak berubah.
+    Versi 1.0.0 dirilis bersama tag rilis akhir proyek.
+
+  contact:
+    name: Tim Back End Barokah Mart
+    email: backend@barokah-mart.test
 
 servers:
-  - url: http://127.0.0.1:8000
-    description: Server lokal
-
-tags:
-  - name: Produk
-    description: Pengelolaan data produk dan pemasok
-  - name: Transaksi
-    description: Pengelolaan transaksi penjualan
-  - name: Laporan
-    description: Laporan penjualan
-  - name: Data
-    description: Informasi pelanggan dan member
-
-components:
-  securitySchemes:
-    ApiKeyAuth:
-      type: apiKey
-      in: header
-      name: X-API-Key
-
-  schemas:
-    Error:
-      type: object
-      properties:
-        kesalahan:
-          type: string
-          example: kunci_api_tidak_dikenal
-        pesan:
-          type: string
-          example: Kunci API tidak dikenal.
+  - url: /api
+    description: Server Laravel yang sedang melayani dokumen ini
 
 security:
-  - ApiKeyAuth: []
+  - KunciApi: []
+
+tags:
+  - name: Layanan
+    description: Pemeriksaan kesehatan layanan. Tidak memerlukan kunci API.
+
+  - name: Katalog
+    description: Katalog produk dan informasi pemasok.
+
+  - name: Transaksi
+    description: Penjualan, struk, dan pembatalan struk.
+
+  - name: Laporan
+    description: Ringkasan penjualan per tanggal.
 
 paths:
-  /api/ping:
+
+  /ping:
     get:
+      tags:
+        - Layanan
       operationId: pingApi
       summary: Memeriksa status API
       description: Memeriksa status API tanpa memerlukan kunci API.
       security: []
       responses:
         '200':
-          description: API aktif
+          description: API aktif.
           content:
             application/json:
               schema:
@@ -69,394 +77,275 @@ paths:
                     format: date-time
                     example: '2026-10-04T10:00:00+07:00'
         '400':
-          description: Permintaan tidak valid
+          description: Permintaan tidak valid.
 
-  /api/v1/pos/produk:
+  /v1/pos/produk:
     get:
       tags:
-        - Produk
-      operationId: getProduk
+        - Katalog
+      operationId: daftarProduk
       summary: Mengambil daftar produk
+      description: |
+        Mengambil katalog produk dengan filter kategori dan pencarian nama.
+        Produk yang telah dihapus secara lunak tidak ditampilkan.
+
       parameters:
         - name: kategori
           in: query
           required: false
+          description: Filter berdasarkan kode kategori.
           schema:
             type: string
-          description: Filter berdasarkan kode kategori.
+          example: minuman
+
         - name: cari
           in: query
           required: false
+          description: Pencarian berdasarkan nama produk.
           schema:
             type: string
-          description: Pencarian berdasarkan nama produk.
+          example: kopi
+
       responses:
         '200':
-          description: Daftar produk berhasil diambil
+          description: Daftar produk berhasil diambil.
           content:
             application/json:
               schema:
                 type: object
+                required:
+                  - data
+                  - meta
                 properties:
                   data:
                     type: array
                     items:
-                      type: object
-                      properties:
-                        sku:
-                          type: string
-                          example: SKU-001
-                        nama:
-                          type: string
-                          example: Beras Premium
-                        kategori:
-                          type: string
-                          example: kebutuhan_rumah
-                        kategori_label:
-                          type: string
-                          example: Kebutuhan Rumah Tangga
-                        harga:
-                          type: integer
-                          example: 72000
-                        harga_format:
-                          type: string
-                          example: Rp72.000
-                        stok:
-                          type: integer
-                          example: 20
-                        tersedia:
-                          type: boolean
-                          example: true
+                      $ref: '#/components/schemas/Produk'
                   meta:
                     type: object
                     properties:
                       jumlah:
                         type: integer
-                        example: 1
+                        example: 4
                       kategori:
                         type: string
                         example: semua
-        '401':
-          description: Kunci API hilang atau tidak dikenal
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
 
-  /api/v1/pos/produk/{sku}:
+        '401':
+          $ref: '#/components/responses/TanpaKunci'
+
+  /v1/pos/produk/{sku}:
     get:
       tags:
-        - Produk
-      operationId: getProdukBySku
-      summary: Mengambil detail produk
+        - Katalog
+      operationId: detailProduk
+      summary: Mengambil detail satu produk
+      description: Mengambil detail produk berdasarkan SKU.
+
       parameters:
-        - name: sku
-          in: path
-          required: true
-          description: SKU produk dengan format SKU- diikuti tiga angka.
-          schema:
-            type: string
-            pattern: '^SKU-[0-9]{3}$'
-            example: SKU-001
+        - $ref: '#/components/parameters/Sku'
+
       responses:
         '200':
-          description: Detail produk berhasil diambil
+          description: Detail produk berhasil diambil.
           content:
             application/json:
               schema:
                 type: object
+                required:
+                  - data
                 properties:
                   data:
-                    type: object
-                    description: Detail produk.
+                    $ref: '#/components/schemas/Produk'
+
         '401':
-          description: Kunci API hilang atau tidak dikenal
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/TanpaKunci'
+
         '404':
-          description: Produk tidak ditemukan
+          $ref: '#/components/responses/ProdukTidakDitemukan'
 
-  /api/v1/pos/produk/{sku}/pemasok:
+  /v1/pos/produk/{sku}/pemasok:
     get:
       tags:
-        - Produk
-      operationId: getPemasokProduk
-      summary: Mengambil daftar pemasok produk
-      description: Endpoint ini hanya dapat diakses oleh peran supervisor.
+        - Katalog
+      operationId: pemasokProduk
+      summary: Pemasok dan margin satu produk
+      description: |
+        Daftar pemasok sebuah produk beserta harga beli dan margin.
+        Pemasok utama selalu berada di urutan pertama.
+
+        AB-13 — harga beli dan margin adalah rahasia dagang: hanya
+        peran supervisor yang boleh melihatnya. Peran kasir ditolak 403.
+
       parameters:
-        - name: sku
-          in: path
-          required: true
-          schema:
-            type: string
-            pattern: '^SKU-[0-9]{3}$'
-            example: SKU-001
+        - $ref: '#/components/parameters/Sku'
+
       responses:
         '200':
-          description: Data produk dan pemasok berhasil diambil
+          description: Pemasok produk.
           content:
             application/json:
               schema:
                 type: object
+                required:
+                  - data
                 properties:
                   data:
-                    type: object
-                    properties:
-                      sku:
-                        type: string
-                        example: SKU-001
-                      nama:
-                        type: string
-                        example: Beras Premium
-                      kategori:
-                        type: string
-                        example: kebutuhan_rumah
-                      harga:
-                        type: integer
-                        example: 72000
-                      stok:
-                        type: integer
-                        example: 20
-                      pemasok:
-                        type: array
-                        items:
-                          type: object
-                          properties:
-                            nama:
-                              type: string
-                              example: PT Sumber Pangan
-                            kota:
-                              type: string
-                              example: Surakarta
-                            harga_beli:
-                              type: integer
-                              example: 57600
-                            utama:
-                              type: boolean
-                              example: true
-                            margin:
-                              type: integer
-                              example: 14400
-                            margin_persen:
-                              type: number
-                              format: float
-                              example: 20.0
+                    $ref: '#/components/schemas/ProdukDenganPemasok'
+              example:
+                data:
+                  sku: SKU-004
+                  nama: Kopi Bubuk 200 g
+                  harga: 24000
+                  pemasok:
+                    - kode: PMS-02
+                      nama: PT Distribusi Minuman Jaya
+                      kota: Semarang
+                      harga_beli: 20400
+                      margin: 3600
+                      margin_persen: 15.0
+                      utama: true
+                    - kode: PMS-01
+                      nama: CV Sumber Pangan Solo
+                      kota: Surakarta
+                      harga_beli: 21100
+                      margin: 2900
+                      margin_persen: 12.1
+                      utama: false
+
         '401':
-          description: Kunci API hilang atau tidak dikenal
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/TanpaKunci'
+
         '403':
-          description: Peran tidak memiliki izin
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/PeranTidakBerwenang'
+
         '404':
-          description: Produk tidak ditemukan
+          $ref: '#/components/responses/ProdukTidakDitemukan'
 
-  /api/v1/pos/pelanggan:
-    get:
-      tags:
-        - Data
-      operationId: getPelanggan
-      summary: Mengambil informasi pelanggan
-      responses:
-        '200':
-          description: Informasi pelanggan berhasil diambil
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: Data pelanggan Noven
-        '401':
-          description: Kunci API hilang atau tidak dikenal
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-
-  /api/v1/pos/member:
-    get:
-      tags:
-        - Data
-      operationId: getMember
-      summary: Mengambil informasi member
-      responses:
-        '200':
-          description: Informasi member berhasil diambil
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: Data member Hanif
-        '401':
-          description: Kunci API hilang atau tidak dikenal
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-
-  /api/v1/pos/transaksi:
+  /v1/pos/transaksi:
     get:
       tags:
         - Transaksi
-      operationId: getTransaksi
+      operationId: daftarTransaksi
       summary: Mengambil daftar transaksi
+      description: Mengambil daftar struk pada satu tanggal.
+
       parameters:
         - name: tanggal
           in: query
           required: false
+          description: |
+            Tanggal transaksi. Jika kosong, menggunakan tanggal hari ini.
           schema:
             type: string
             format: date
-          description: Tanggal transaksi. Jika kosong, menggunakan tanggal hari ini.
+          example: '2026-10-04'
+
       responses:
         '200':
-          description: Daftar transaksi berhasil diambil
+          description: Daftar transaksi berhasil diambil.
           content:
             application/json:
               schema:
                 type: object
+                required:
+                  - data
+                  - meta
                 properties:
                   data:
                     type: array
                     items:
-                      type: object
-                      description: Data transaksi.
+                      $ref: '#/components/schemas/Struk'
                   meta:
                     type: object
                     properties:
                       tanggal:
                         type: string
                         format: date
+                        example: '2026-10-04'
+
         '401':
-          description: Kunci API hilang atau tidak dikenal
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/TanpaKunci'
 
     post:
       tags:
         - Transaksi
-      operationId: createTransaksi
+      operationId: buatTransaksi
       summary: Membuat transaksi
       description: Membuat transaksi penjualan baru.
+
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              required:
-                - item
-                - metode_bayar
-              properties:
-                item:
-                  type: array
-                  minItems: 1
-                  items:
-                    type: object
-                    required:
-                      - sku
-                      - kuantitas
-                    properties:
-                      sku:
-                        type: string
-                        example: SKU-001
-                      kuantitas:
-                        type: integer
-                        minimum: 1
-                        example: 1
-                metode_bayar:
-                  type: string
-                  example: tunai
-                member:
-                  type: boolean
-                  example: false
-                dibayar:
-                  type: integer
-                  minimum: 0
-                  example: 100000
+              $ref: '#/components/schemas/PermintaanTransaksi'
+
       responses:
         '201':
-          description: Transaksi berhasil dibuat
+          description: Transaksi berhasil dibuat.
           content:
             application/json:
               schema:
                 type: object
+                required:
+                  - data
                 properties:
                   data:
-                    type: object
-                    description: Data transaksi yang dibuat.
-        '401':
-          description: Kunci API hilang atau tidak dikenal
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '422':
-          description: Validasi gagal
+                    $ref: '#/components/schemas/Struk'
 
-  /api/v1/pos/transaksi/{nomor}:
+        '401':
+          $ref: '#/components/responses/TanpaKunci'
+
+        '404':
+          $ref: '#/components/responses/ProdukTidakDitemukan'
+
+        '422':
+          $ref: '#/components/responses/ValidasiGagal'
+
+  /v1/pos/transaksi/{nomor}:
     get:
       tags:
         - Transaksi
-      operationId: getTransaksiByNomor
+      operationId: detailTransaksi
       summary: Mengambil detail transaksi
+      description: Mengambil satu struk berdasarkan nomor transaksi.
+
       parameters:
-        - name: nomor
-          in: path
-          required: true
-          schema:
-            type: string
-            pattern: '^POS-[0-9]{8}-[0-9]{4}$'
-            example: POS-20261004-0001
+        - $ref: '#/components/parameters/NomorTransaksi'
+
       responses:
         '200':
-          description: Detail transaksi berhasil diambil
+          description: Detail transaksi berhasil diambil.
           content:
             application/json:
               schema:
                 type: object
+                required:
+                  - data
                 properties:
                   data:
-                    type: object
-                    description: Detail transaksi.
-        '401':
-          description: Kunci API hilang atau tidak dikenal
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '404':
-          description: Transaksi tidak ditemukan
+                    $ref: '#/components/schemas/Struk'
 
-  /api/v1/pos/transaksi/{nomor}/batal:
+        '401':
+          $ref: '#/components/responses/TanpaKunci'
+
+        '404':
+          $ref: '#/components/responses/TransaksiTidakDitemukan'
+
+  /v1/pos/transaksi/{nomor}/batal:
     post:
       tags:
         - Transaksi
       operationId: batalTransaksi
       summary: Membatalkan transaksi
-      description: Hanya dapat dilakukan oleh supervisor.
+      description: |
+        Membatalkan transaksi yang sudah dibuat.
+        Hanya dapat dilakukan oleh supervisor.
+
       parameters:
-        - name: nomor
-          in: path
-          required: true
-          schema:
-            type: string
-            pattern: '^POS-[0-9]{8}-[0-9]{4}$'
-            example: POS-20261004-0001
+        - $ref: '#/components/parameters/NomorTransaksi'
+
       requestBody:
         required: true
         content:
@@ -468,160 +357,120 @@ paths:
               properties:
                 alasan:
                   type: string
-                  minLength: 3
+                  minLength: 5
                   example: Transaksi salah
+
       responses:
         '200':
-          description: Transaksi berhasil dibatalkan
+          description: Transaksi berhasil dibatalkan.
           content:
             application/json:
               schema:
                 type: object
+                required:
+                  - data
                 properties:
                   data:
-                    type: object
-                    description: Hasil pembatalan transaksi.
+                    $ref: '#/components/schemas/Struk'
+
         '401':
-          description: Kunci API hilang atau tidak dikenal
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/TanpaKunci'
+
         '403':
-          description: Peran tidak memiliki izin
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/PeranTidakBerwenang'
+
         '404':
-          description: Transaksi tidak ditemukan
-        '422':
-          description: Validasi gagal
+          $ref: '#/components/responses/TransaksiTidakDitemukan'
 
-  /api/v1/pos/pratinjau:
-    post:
-      tags:
-        - Transaksi
-      operationId: previewTransaksi
-      summary: Melihat pratinjau transaksi
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - item
-              properties:
-                item:
-                  type: array
-                  minItems: 1
-                  items:
-                    type: object
-                    required:
-                      - sku
-                      - kuantitas
-                    properties:
-                      sku:
-                        type: string
-                        example: SKU-001
-                      kuantitas:
-                        type: integer
-                        minimum: 1
-                        example: 1
-                member:
-                  type: boolean
-                  example: false
-      responses:
-        '200':
-          description: Pratinjau transaksi berhasil dibuat
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: Pratinjau berhasil
-                  data:
-                    type: object
-                    description: Rincian pratinjau transaksi.
-        '401':
-          description: Kunci API hilang atau tidak dikenal
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
         '422':
-          description: Validasi gagal
+          $ref: '#/components/responses/ValidasiGagal'
 
-  /api/v1/pos/laporan/harian:
+  /v1/pos/laporan/harian:
     get:
       tags:
         - Laporan
-      operationId: getLaporanHarian
+      operationId: laporanHarian
       summary: Mengambil laporan penjualan harian
+      description: Mengambil ringkasan omzet berdasarkan tanggal.
+
       parameters:
-        - name: tanggal
-          in: query
-          required: false
-          schema:
-            type: string
-            format: date
-          description: Tanggal laporan. Jika kosong, menggunakan tanggal hari ini.
+        - $ref: '#/components/parameters/Tanggal'
+
       responses:
         '200':
-          description: Laporan harian berhasil diambil
+          description: Laporan harian berhasil diambil.
           content:
             application/json:
               schema:
                 type: object
+                required:
+                  - data
                 properties:
                   data:
                     type: object
-                    description: Ringkasan penjualan harian.
-        '401':
-          description: Kunci API hilang atau tidak dikenal
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+                    properties:
+                      tanggal:
+                        type: string
+                        format: date
+                      jumlah_transaksi:
+                        type: integer
+                      subtotal:
+                        $ref: '#/components/schemas/Rupiah'
+                      total_diskon:
+                        $ref: '#/components/schemas/Rupiah'
+                      total:
+                        $ref: '#/components/schemas/Rupiah'
 
-  /api/v1/pos/laporan/terlaris:
+        '401':
+          $ref: '#/components/responses/TanpaKunci'
+
+  /v1/pos/laporan/terlaris:
     get:
       tags:
         - Laporan
-      operationId: getLaporanTerlaris
+      operationId: laporanTerlaris
       summary: Mengambil laporan produk terlaris
+      description: Mengambil peringkat produk berdasarkan jumlah terjual.
+
       parameters:
-        - name: tanggal
-          in: query
-          required: false
-          schema:
-            type: string
-            format: date
+        - $ref: '#/components/parameters/Tanggal'
+
         - name: batas
           in: query
           required: false
+          description: |
+            Jumlah produk yang ditampilkan.
+            Nilai akan dibatasi antara 1 dan 20.
           schema:
             type: integer
             minimum: 1
             maximum: 20
             default: 5
-          description: Jumlah produk yang ditampilkan, dibatasi antara 1 dan 20.
+
       responses:
         '200':
-          description: Laporan produk terlaris berhasil diambil
+          description: Laporan produk terlaris berhasil diambil.
           content:
             application/json:
               schema:
                 type: object
+                required:
+                  - data
+                  - meta
                 properties:
                   data:
                     type: array
                     items:
                       type: object
-                      description: Data produk terlaris.
+                      properties:
+                        sku:
+                          type: string
+                        nama:
+                          type: string
+                        jumlah:
+                          type: integer
+                        pendapatan:
+                          $ref: '#/components/schemas/Rupiah'
                   meta:
                     type: object
                     properties:
@@ -630,39 +479,48 @@ paths:
                         format: date
                       batas:
                         type: integer
-        '401':
-          description: Kunci API hilang atau tidak dikenal
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+                        maximum: 20
 
-  /api/v1/pos/laporan/kategori:
+        '401':
+          $ref: '#/components/responses/TanpaKunci'
+
+  /v1/pos/laporan/kategori:
     get:
       tags:
         - Laporan
-      operationId: getLaporanKategori
+      operationId: laporanKategori
       summary: Mengambil laporan penjualan per kategori
+      description: |
+        Mengambil ringkasan penjualan berdasarkan kategori.
+        Produk yang telah dihapus secara lunak tidak memengaruhi
+        perhitungan pendapatan kategori.
+
+        AB-14 — laporan kategori menggunakan data transaksi
+        yang benar-benar terjual.
+
       parameters:
-        - name: tanggal
-          in: query
-          required: false
-          schema:
-            type: string
-            format: date
-          description: Tanggal laporan. Jika kosong, menggunakan tanggal hari ini.
+        - $ref: '#/components/parameters/Tanggal'
+
       responses:
         '200':
-          description: Laporan per kategori berhasil diambil
+          description: Laporan per kategori berhasil diambil.
           content:
             application/json:
               schema:
                 type: object
+                required:
+                  - data
+                  - meta
                 properties:
                   data:
                     type: array
                     items:
                       type: object
+                      required:
+                        - kategori
+                        - nama
+                        - jumlah
+                        - pendapatan
                       properties:
                         kategori:
                           type: string
@@ -674,7 +532,7 @@ paths:
                           type: integer
                           example: 4
                         pendapatan:
-                          type: integer
+                          $ref: '#/components/schemas/Rupiah'
                           example: 81000
                   meta:
                     type: object
@@ -682,9 +540,447 @@ paths:
                       tanggal:
                         type: string
                         format: date
+
         '401':
-          description: Kunci API hilang atau tidak dikenal
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/TanpaKunci'
+
+
+components:
+
+  securitySchemes:
+    KunciApi:
+      type: apiKey
+      in: header
+      name: X-API-Key
+
+  parameters:
+
+    Sku:
+      name: sku
+      in: path
+      required: true
+      description: Kode unik produk.
+      schema:
+        type: string
+        pattern: '^SKU-[0-9]{3}$'
+      example: SKU-004
+
+    NomorTransaksi:
+      name: nomor
+      in: path
+      required: true
+      description: Nomor unik transaksi POS.
+      schema:
+        type: string
+        pattern: '^POS-[0-9]{8}-[0-9]{4}$'
+      example: POS-20260914-0999
+
+    Tanggal:
+      name: tanggal
+      in: query
+      required: false
+      description: Tanggal laporan. Jika kosong, menggunakan tanggal hari ini.
+      schema:
+        type: string
+        format: date
+      example: '2026-10-04'
+
+  responses:
+
+    TanpaKunci:
+      description: Header X-API-Key tidak ada atau tidak dikenal.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Kesalahan'
+          examples:
+            hilang:
+              summary: Header tidak dikirim
+              value:
+                kesalahan: kunci_api_hilang
+                pesan: Header X-API-Key wajib disertakan.
+
+            tidakDikenal:
+              summary: Kunci salah
+              value:
+                kesalahan: kunci_api_tidak_dikenal
+                pesan: Kunci API tidak dikenal.
+
+    PeranTidakBerwenang:
+      description: Peran pemilik kunci API tidak diizinkan melakukan aksi ini.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Kesalahan'
+          example:
+            kesalahan: peran_tidak_berwenang
+            pesan: 'Aksi ini hanya boleh dilakukan oleh: supervisor.'
+            peran_anda: kasir
+
+    ProdukTidakDitemukan:
+      description: SKU cocok pola, tetapi tidak ada di katalog.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Kesalahan'
+          example:
+            kesalahan: produk_tidak_ditemukan
+            pesan: Produk dengan SKU SKU-999 tidak ditemukan.
+            sku: SKU-999
+
+    TransaksiTidakDitemukan:
+      description: Nomor struk cocok pola, tetapi tidak ada.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Kesalahan'
+          example:
+            kesalahan: transaksi_tidak_ditemukan
+            pesan: Transaksi POS-20260914-0999 tidak ditemukan.
+            nomor: POS-20260914-0999
+
+    ValidasiGagal:
+      description: Bentuk masukan tidak sah.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/KesalahanValidasi'
+          example:
+            message: The alasan field must be at least 5 characters.
+            errors:
+              alasan:
+                - The alasan field must be at least 5 characters.
+
+  schemas:
+
+    Rupiah:
+      type: integer
+      minimum: 0
+      description: Nilai uang dalam bilangan bulat rupiah.
+      example: 24000
+
+    Kesalahan:
+      type: object
+      description: |
+        Kode kesalahan merupakan bagian kontrak dan dapat digunakan
+        oleh klien untuk menentukan percabangan. Pesan dapat berubah.
+      required:
+        - kesalahan
+        - pesan
+      properties:
+        kesalahan:
+          type: string
+          example: produk_tidak_ditemukan
+
+        pesan:
+          type: string
+          example: Produk dengan SKU SKU-999 tidak ditemukan.
+
+        peran_anda:
+          type: string
+          example: kasir
+
+        sku:
+          type: string
+          example: SKU-999
+
+        nomor:
+          type: string
+          example: POS-20260914-0999
+
+    KesalahanValidasi:
+      type: object
+      required:
+        - message
+        - errors
+      properties:
+        message:
+          type: string
+          example: The alasan field must be at least 5 characters.
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+
+    Produk:
+      type: object
+      required:
+        - sku
+        - nama
+        - harga
+        - stok
+        - tersedia
+      properties:
+        sku:
+          type: string
+          pattern: '^SKU-[0-9]{3}$'
+          example: SKU-001
+
+        nama:
+          type: string
+          example: Beras Premium
+
+        kategori:
+          type: string
+          example: kebutuhan_rumah
+
+        kategori_label:
+          type: string
+          example: Kebutuhan Rumah Tangga
+
+        harga:
+          $ref: '#/components/schemas/Rupiah'
+
+        harga_format:
+          type: string
+          example: Rp72.000
+
+        stok:
+          type: integer
+          example: 20
+
+        tersedia:
+          type: boolean
+          example: true
+
+    ProdukDenganPemasok:
+      type: object
+      required:
+        - sku
+        - nama
+        - harga
+        - pemasok
+      properties:
+        sku:
+          type: string
+          pattern: '^SKU-[0-9]{3}$'
+
+        nama:
+          type: string
+
+        harga:
+          $ref: '#/components/schemas/Rupiah'
+
+        pemasok:
+          type: array
+          items:
+            type: object
+            required:
+              - kode
+              - nama
+              - kota
+              - harga_beli
+              - utama
+              - margin
+              - margin_persen
+            properties:
+              kode:
+                type: string
+                example: PMS-02
+
+              nama:
+                type: string
+                example: PT Distribusi Minuman Jaya
+
+              kota:
+                type: string
+                example: Semarang
+
+              harga_beli:
+                $ref: '#/components/schemas/Rupiah'
+
+              utama:
+                type: boolean
+                example: true
+
+              margin:
+                type: integer
+                example: 3600
+
+              margin_persen:
+                type: number
+                example: 15.0
+
+    MetodeBayar:
+      type: string
+      enum:
+        - tunai
+        - qris
+        - debit
+        - kredit
+      example: tunai
+
+    ItemTransaksi:
+      type: object
+      required:
+        - sku
+        - kuantitas
+      properties:
+        sku:
+          type: string
+          pattern: '^SKU-[0-9]{3}$'
+          example: SKU-001
+
+        kuantitas:
+          type: integer
+          minimum: 1
+          example: 2
+
+    ItemStruk:
+      type: object
+      required:
+        - sku
+        - nama
+        - kuantitas
+        - harga
+        - subtotal
+      properties:
+        sku:
+          type: string
+          pattern: '^SKU-[0-9]{3}$'
+
+        nama:
+          type: string
+
+        kuantitas:
+          type: integer
+          minimum: 1
+
+        harga:
+          $ref: '#/components/schemas/Rupiah'
+
+        subtotal:
+          $ref: '#/components/schemas/Rupiah'
+
+    PermintaanTransaksi:
+      type: object
+      required:
+        - item
+        - metode_bayar
+      properties:
+        item:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/ItemTransaksi'
+
+        metode_bayar:
+          $ref: '#/components/schemas/MetodeBayar'
+
+        member:
+          type: boolean
+          example: false
+
+        dibayar:
+          type: integer
+          minimum: 0
+          example: 100000
+
+    Struk:
+      type: object
+      required:
+        - nomor
+        - waktu
+        - kasir
+        - member
+        - metode_bayar
+        - metode_label
+        - status
+        - item
+        - subtotal
+        - diskon_grosir
+        - diskon_member
+        - total_diskon
+        - dpp
+        - ppn
+        - total
+        - pembulatan
+        - total_bayar
+        - dibayar
+        - kembalian
+        - alasan_batal
+        - dibatalkan_oleh
+        - dibatalkan_pada
+      properties:
+        nomor:
+          type: string
+          pattern: '^POS-[0-9]{8}-[0-9]{4}$'
+
+        waktu:
+          type: string
+          format: date-time
+
+        kasir:
+          type: string
+
+        member:
+          type: boolean
+
+        metode_bayar:
+          $ref: '#/components/schemas/MetodeBayar'
+
+        metode_label:
+          type: string
+
+        status:
+          type: string
+          enum:
+            - selesai
+            - batal
+
+        item:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/ItemStruk'
+
+        subtotal:
+          $ref: '#/components/schemas/Rupiah'
+
+        diskon_grosir:
+          $ref: '#/components/schemas/Rupiah'
+
+        diskon_member:
+          $ref: '#/components/schemas/Rupiah'
+
+        total_diskon:
+          $ref: '#/components/schemas/Rupiah'
+
+        dpp:
+          $ref: '#/components/schemas/Rupiah'
+
+        ppn:
+          $ref: '#/components/schemas/Rupiah'
+
+        total:
+          $ref: '#/components/schemas/Rupiah'
+
+        pembulatan:
+          $ref: '#/components/schemas/Rupiah'
+
+        total_bayar:
+          $ref: '#/components/schemas/Rupiah'
+
+        dibayar:
+          $ref: '#/components/schemas/Rupiah'
+
+        kembalian:
+          $ref: '#/components/schemas/Rupiah'
+
+        alasan_batal:
+          type:
+            - string
+            - 'null'
+
+        dibatalkan_oleh:
+          type:
+            - string
+            - 'null'
+
+        dibatalkan_pada:
+          type:
+            - string
+            - 'null'
+          format: date-time
