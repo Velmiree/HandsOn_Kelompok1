@@ -17,9 +17,20 @@ use App\Models\Transaksi;
  */
 final class RepositoriTransaksiEloquent implements RepositoriTransaksi
 {
+    public function semua(): array
+    {
+        return Transaksi::query()
+            ->with('item')
+            ->orderBy('nomor')
+            ->get()
+            ->map($this->keArray(...))
+            ->all();
+    }
+
     public function tanggal(string $tanggal): array
     {
         return Transaksi::query()
+            ->with('item')
             ->tanggal($tanggal)
             ->orderBy('nomor')
             ->get()
@@ -30,10 +41,13 @@ final class RepositoriTransaksiEloquent implements RepositoriTransaksi
     public function cariNomor(string $nomor): ?array
     {
         $transaksi = Transaksi::query()
+            ->with('item')
             ->where('nomor', $nomor)
             ->first();
 
-        return $transaksi === null ? null : $this->keArray($transaksi);
+        return $transaksi === null
+            ? null
+            : $this->keArray($transaksi);
     }
 
     public function simpan(array $transaksi): void
@@ -89,26 +103,20 @@ final class RepositoriTransaksiEloquent implements RepositoriTransaksi
     }
 
     /** @return array<string, mixed> */
-    private function keArray(Transaksi $transaksi): array
-    {
-        $item = ItemTransaksi::query()
-            ->where('transaksi_id', $transaksi->id)
-            ->get([
-                'sku',
-                'nama_produk',
-                'harga_satuan',
-                'kuantitas',
-                'diskon',
-                'total',
-            ])
+    private function keArray(
+        Transaksi $transaksi
+    ): array {
+        $item = $transaksi->item
             ->map(
-                static fn (ItemTransaksi $i): array => [
-                    'sku' => $i->sku,
-                    'nama' => $i->nama_produk,
+                static fn (
+                    ItemTransaksi $i
+                ): array => [
+                    'sku'          => $i->sku,
+                    'nama'         => $i->nama_produk,
                     'harga_satuan' => $i->harga_satuan,
-                    'kuantitas' => $i->kuantitas,
-                    'diskon' => $i->diskon,
-                    'total' => $i->total,
+                    'kuantitas'    => $i->kuantitas,
+                    'diskon'       => $i->diskon,
+                    'total'        => $i->total,
                 ]
             )
             ->all();

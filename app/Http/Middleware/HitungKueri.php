@@ -13,19 +13,21 @@ final class HitungKueri
 {
     public function handle(Request $request, Closure $next): Response
     {
+        // Guard clause dari main: jika bukan local environment, langsung lewat
         if (! app()->isLocal()) {
             return $next($request);
         }
 
-        $jumlah = 0;
+        $jumlahKueri = 0;
 
-        DB::listen(function () use (&$jumlah): void {
-            $jumlah++;
+        // Hitung setiap kueri basis data yang dieksekusi selama request berlangsung
+        DB::listen(function () use (&$jumlahKueri): void {
+            $jumlahKueri++;
         });
 
         $response = $next($request);
 
-        $response->headers->set('X-Jumlah-Kueri', (string) $jumlah);
+        $response->headers->set('X-Jumlah-Kueri', (string) $jumlahKueri);
 
         return $response;
     }

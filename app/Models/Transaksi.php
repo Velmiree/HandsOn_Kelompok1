@@ -62,8 +62,8 @@ final class Transaksi extends Model
             ->where('created_at', '<', $akhir);
     }
 
-    public function itemTransaksi()
-    {
-        return $this->hasMany(ItemTransaksi::class, 'transaksi_id');
-    }
+    public function item()
+{
+    return $this->hasMany(ItemTransaksi::class, 'transaksi_id');
+}
 }
