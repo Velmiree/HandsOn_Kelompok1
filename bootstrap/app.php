@@ -47,4 +47,5 @@ return Application::configure(basePath: dirname(__DIR__))
                 'pesan' => $e->getMessage(),
             ], $e->konteks()), $e->kodeHttp());
         });
-    })->create();
+    })
+    ->create();

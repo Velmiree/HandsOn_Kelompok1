@@ -7,8 +7,8 @@ namespace App\Models;
 use App\Domain\Kategori as EnumKategori;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\ItemTransaksi;
-use App\Models\Produk;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 final class Kategori extends Model
 {
@@ -31,21 +31,25 @@ final class Kategori extends Model
         return EnumKategori::from($this->kode);
     }
 
-    public function produk()
+    /** Satu kategori memiliki banyak produk. */
+    public function produk(): HasMany
     {
         return $this->hasMany(Produk::class, 'kategori_id');
     }
 
-    public function itemTerjual()
+    /**
+     * Seluruh item transaksi dari produk-produk dalam kategori ini.
+     *
+     * Produk yang sudah soft-delete tetap dihitung dalam laporan.
+     */
+    public function itemTerjual(): HasManyThrough
     {
         return $this->hasManyThrough(
             ItemTransaksi::class,
             Produk::class,
             'kategori_id',
             'produk_id',
-            'id',
-            'id'
-        );
+        )->withTrashedParents();
     }
 
     public function scopeAktif($query)

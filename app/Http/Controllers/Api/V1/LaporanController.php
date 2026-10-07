@@ -44,11 +44,15 @@ final class LaporanController extends Controller
     public function kategori(Request $request): JsonResponse
     {
         $tanggal = $this->tanggal($request);
+        $data = $this->laporan->perKategori($tanggal);
 
         return response()->json([
-            'data' => $this->laporan->perKategori($tanggal),
+            'data' => $data,
             'meta' => [
                 'tanggal' => $tanggal,
+                'total_pendapatan' => array_sum(
+                    array_column($data, 'pendapatan')
+                ),
             ],
         ]);
     }
