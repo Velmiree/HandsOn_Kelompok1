@@ -139,22 +139,22 @@ final class LayananKasir
     public function proses(array $data, string $kasir): array
     {
         return DB::transaction(function () use ($data, $kasir): array {
-            foreach ($data['item'] as $baris) {
-                $tersedia = $this->produk->kunciStok($baris['sku']);
+        $metode = MetodeBayar::from($data['metode_bayar']);
+        $member = (bool) ($data['member'] ?? false);
 
-                if ($baris['kuantitas'] > $tersedia) {
-                    throw new StokTidakCukup(
-                        $baris['sku'],
-                        (int) $baris['kuantitas'],
-                        $tersedia
-                    );
-                }
+        $rincian = $this->hitung($data['item'], $member);
+
+        foreach ($data['item'] as $baris) {
+            $tersedia = $this->produk->kunciStok($baris['sku']);
+
+            if ($baris['kuantitas'] > $tersedia) {
+                throw new StokTidakCukup(
+                    $baris['sku'],
+                    (int) $baris['kuantitas'],
+                    $tersedia
+                );
             }
-
-            $metode = MetodeBayar::from($data['metode_bayar']);
-            $member = (bool) ($data['member'] ?? false);
-
-            $rincian = $this->hitung($data['item'], $member);
+        }
 
             $totalBayar = new Uang($rincian['total_bayar']);
 

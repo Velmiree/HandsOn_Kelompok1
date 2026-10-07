@@ -27,12 +27,12 @@ final class LaporanController extends Controller
     public function terlaris(Request $request): JsonResponse
     {
         $tanggal = $this->tanggal($request);
-        $batas = (int) ($request->query('batas') ?? 5);
+        $batas = max(1, min((int) ($request->query('batas') ?? 5), 20));
 
         return response()->json([
             'data' => $this->laporan->terlaris(
                 $tanggal,
-                max(1, min($batas, 20))
+                $batas
             ),
             'meta' => [
                 'tanggal' => $tanggal,

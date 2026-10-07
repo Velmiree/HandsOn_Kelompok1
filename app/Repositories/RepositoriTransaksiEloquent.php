@@ -141,6 +141,9 @@ final class RepositoriTransaksiEloquent implements RepositoriTransaksi
             'total_bayar' => $transaksi->total_bayar,
             'dibayar' => $transaksi->dibayar,
             'kembalian' => $transaksi->kembalian,
+            'alasan_batal' => $transaksi->alasan_batal,
+            'dibatalkan_oleh' => $transaksi->dibatalkan_oleh,
+            'dibatalkan_pada' => $transaksi->dibatalkan_pada?->toIso8601String(),
         ];
     }
 }
